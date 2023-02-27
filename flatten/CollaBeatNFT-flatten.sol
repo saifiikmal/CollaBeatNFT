@@ -2165,7 +2165,7 @@ library Counters {
 }
 
 
-// File contracts/LeMusicNFT.sol
+// File contracts/CollaBeatNFT.sol
 
 pragma solidity ^0.8.9;
 
@@ -2176,7 +2176,7 @@ pragma solidity ^0.8.9;
 
 
 
-contract LeMusicNFT is ERC1155, IERC2981, AccessControl, Pausable, ERC1155Burnable, ERC1155Supply, ERC1155URIStorage {
+contract CollaBeatNFT is ERC1155, IERC2981, AccessControl, Pausable, ERC1155Burnable, ERC1155Supply, ERC1155URIStorage {
     using Counters for Counters.Counter;
     bytes32 public constant URI_SETTER_ROLE = keccak256("URI_SETTER_ROLE");
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
@@ -2188,11 +2188,13 @@ contract LeMusicNFT is ERC1155, IERC2981, AccessControl, Pausable, ERC1155Burnab
     address public royaltyRecipient;
     uint public royaltyFee;
 
-    constructor() ERC1155("") {
+    constructor(string memory tokenBaseURI) ERC1155("") {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(URI_SETTER_ROLE, msg.sender);
         _grantRole(PAUSER_ROLE, msg.sender);
         _grantRole(MINTER_ROLE, msg.sender);
+
+        _setBaseURI(tokenBaseURI);
     }
 
     function setMaxSupplyPerTokenType(uint max) external onlyRole(DEFAULT_ADMIN_ROLE) {
@@ -2203,16 +2205,20 @@ contract LeMusicNFT is ERC1155, IERC2981, AccessControl, Pausable, ERC1155Burnab
         maxTokenId = max;
     }
 
-    function setRoyaltyReceiver(address recipient) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setRoyaltyReceiver(address recipient) external onlyRole(DEFAULT_ADMIN_ROLE) {
         royaltyRecipient = recipient;
     }
 
-    function setRoyaltyFee(uint fee) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setRoyaltyFee(uint fee) external onlyRole(DEFAULT_ADMIN_ROLE) {
         royaltyFee = fee;
     }
 
     function uri(uint256 tokenId) public view override(ERC1155, ERC1155URIStorage) returns (string memory) {
         return ERC1155URIStorage.uri(tokenId);
+    }
+
+    function setBaseURI(string memory tokenBaseURI) public onlyRole(URI_SETTER_ROLE) {
+        _setBaseURI(tokenBaseURI);
     }
 
     function setURI(uint tokenId, string memory newuri) public onlyRole(URI_SETTER_ROLE) {
@@ -2227,30 +2233,27 @@ contract LeMusicNFT is ERC1155, IERC2981, AccessControl, Pausable, ERC1155Burnab
         _unpause();
     }
 
+    function currentTokenId() external view returns (uint) {
+      return _tokenIdCounter.current();
+    }
+
+    function nextTokenId() external view returns (uint) {
+      return _tokenIdCounter.current() + 1;
+    }
+
+    function registerToken() external onlyRole(MINTER_ROLE) returns (uint) {
+      _tokenIdCounter.increment();
+      return _tokenIdCounter.current();
+    }
+    
     function mint(address account, uint256 id, uint256 amount, bytes memory data)
         public
         onlyRole(MINTER_ROLE)
     {
-        require(exists(id), "Token ID not exist");
-        require(totalSupply(id) + amount < maxSupplyPerTokenType, "Exceed max total supply token type");
+        require(id < maxTokenId + 1, "Exceeded max token id");
+        require(totalSupply(id) + amount < maxSupplyPerTokenType + 1, "Exceed max total supply token type");
 
         _mint(account, id, amount, data);
-    }
-
-    function mint(address account, uint256 amount, string memory tokenURI, bytes memory data)
-        public
-        onlyRole(MINTER_ROLE)
-    {
-        uint tokenId = _tokenIdCounter.current();
-        require(tokenId + 1 < maxTokenId, "Exceed max token");
-        require(amount < maxSupplyPerTokenType, "Exceed max total supply token type");
-
-        _tokenIdCounter.increment();
-
-        uint newTokenId = _tokenIdCounter.current();
-
-        _mint(account, newTokenId, amount, data);
-        _setURI(newTokenId, tokenURI);
     }
 
     // EIP2981 standard royalties return.
