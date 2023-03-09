@@ -21,7 +21,7 @@ contract CollaBeatUtility is AccessControl {
     string public chainId;
 
     event Minted(address from, uint tokenId, uint amount);
-    event Forked(address from, string dataKey, string cid);
+    event Forked(address from, uint tokenId, string dataKey, string cid);
 
     constructor(address _nftAddress, uint _mintPrice, address _feeReceiver, uint8 _nonce, string memory _chainId) {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -61,7 +61,7 @@ contract CollaBeatUtility is AccessControl {
 
         IERC1155(nftAddress).mint(msg.sender, tokenId, 1, "");
 
-        emit Forked(msg.sender, newTokenURI, cid);
+        emit Forked(msg.sender, tokenId, newTokenURI, cid);
     }
 
     function withdraw() external onlyRole(DEFAULT_ADMIN_ROLE) {

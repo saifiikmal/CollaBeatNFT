@@ -41,7 +41,7 @@ describe("CollaBeat", function () {
     await expect(utility.fork(cid, {
       value: mintFee,
       //gasLimit: 3000000
-    })).to.emit(utility, 'Forked').withArgs(owner1.address, hashByte.substring(2), cid);
+    })).to.emit(utility, 'Forked').withArgs(owner1.address, 1, hashByte.substring(2), cid);
 
     const balance = await nft.balanceOf(owner1.address, 1)
     expect(balance).to.equal(1)
@@ -80,7 +80,7 @@ describe("CollaBeat", function () {
     await expect(utility.fork(cid, {
       value: mintFee,
       //gasLimit: 3000000
-    })).to.emit(utility, 'Forked').withArgs(owner3.address, hashByte.substring(2), cid);
+    })).to.emit(utility, 'Forked').withArgs(owner3.address, 2, hashByte.substring(2), cid);
 
     const balance = await nft.balanceOf(owner3.address, 2)
     expect(balance).to.equal(1)
