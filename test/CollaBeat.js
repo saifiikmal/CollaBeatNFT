@@ -1,4 +1,5 @@
 const { expect } = require("chai");
+const { ethers } = require("hardhat");
 
 describe("CollaBeat", function () {
   let creator, owner1, owner2;
@@ -35,13 +36,23 @@ describe("CollaBeat", function () {
     const hashByte = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(hash))
     const hashUri = tokenURI+hashByte.substring(2)
 
+    const abi = ethers.utils.defaultAbiCoder;
+    const eventData = abi.encode(
+      ["string", "string"],
+      [hashByte.substring(2), cid]
+    )
+
     console.log({hash, hashUri, hashByte})
+    console.log(abi.decode(["string", "string"], eventData))
 
     utility = utility.connect(owner1)
     await expect(utility.fork(cid, {
       value: mintFee,
       //gasLimit: 3000000
-    })).to.emit(utility, 'Forked').withArgs(owner1.address, 1, hashByte.substring(2), cid);
+    }))
+    .to.emit(utility, 'Forked').withArgs(owner1.address, 1, hashByte.substring(2), cid)
+    .to.emit(nft, 'Minted').withArgs(owner1.address, 1, eventData);
+
 
     const balance = await nft.balanceOf(owner1.address, 1)
     expect(balance).to.equal(1)
@@ -63,7 +74,9 @@ describe("CollaBeat", function () {
     await expect(utility.mint(1, 1, {
       value: mintFee,
       //gasLimit: 3000000
-    })).to.emit(utility, 'Minted').withArgs(owner2.address, 1, 1)
+    }))
+    .to.emit(utility, 'Minted').withArgs(owner2.address, 1, 1)
+    .to.emit(nft, 'Minted').withArgs(owner2.address, 1, "0x");
 
     const balance = await nft.balanceOf(owner2.address, 1)
     expect(balance).to.equal(1)
@@ -74,13 +87,21 @@ describe("CollaBeat", function () {
     const hashByte = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(hash))
     const hashUri = tokenURI+hashByte.substring(2)
 
+    const abi = ethers.utils.defaultAbiCoder;
+    const eventData = abi.encode(
+      ["string", "string"],
+      [hashByte.substring(2), cid]
+    )
+
     console.log({hash, hashUri, hashByte})
 
     utility = utility.connect(owner3)
     await expect(utility.fork(cid, {
       value: mintFee,
       //gasLimit: 3000000
-    })).to.emit(utility, 'Forked').withArgs(owner3.address, 2, hashByte.substring(2), cid);
+    }))
+    .to.emit(utility, 'Forked').withArgs(owner3.address, 2, hashByte.substring(2), cid)
+    .to.emit(nft, 'Minted').withArgs(owner3.address, 2, eventData);
 
     const balance = await nft.balanceOf(owner3.address, 2)
     expect(balance).to.equal(1)

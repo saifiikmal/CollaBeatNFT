@@ -35,9 +35,7 @@ contract CollaBeatUtility is AccessControl {
 
     function mint(uint tokenId, uint32 amount) public payable {
 
-        if (!hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) {
-          require(msg.value >= mintPrice, "Insufficient amount");
-        }
+        require(msg.value >= mintPrice, "Insufficient amount");
         require(IERC1155(nftAddress).exists(tokenId), "Token ID not exists");
       
         IERC1155(nftAddress).mint(msg.sender, tokenId, amount, "");
@@ -46,9 +44,7 @@ contract CollaBeatUtility is AccessControl {
     }
 
     function fork(string memory cid) public payable {
-        if (!hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) {
-          require(msg.value >= mintPrice, "Insufficient amount");
-        }
+        require(msg.value >= mintPrice, "Insufficient amount");
 
         uint tokenId = IERC1155(nftAddress).registerToken(); 
 
@@ -56,10 +52,12 @@ contract CollaBeatUtility is AccessControl {
         string memory _strTokenId = Strings.toString(tokenId);
         string memory _strNonce = Strings.toString(nonce);
         string memory newTokenURI = URIHash(abi.encodePacked(_strAddress, _strTokenId, chainId, _strNonce));
+
+        bytes memory data = abi.encode(newTokenURI, cid);
         
         IERC1155(nftAddress).setURI(tokenId, newTokenURI);
 
-        IERC1155(nftAddress).mint(msg.sender, tokenId, 1, "");
+        IERC1155(nftAddress).mint(msg.sender, tokenId, 1, data);
 
         emit Forked(msg.sender, tokenId, newTokenURI, cid);
     }

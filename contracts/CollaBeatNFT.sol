@@ -22,6 +22,8 @@ contract CollaBeatNFT is ERC1155, IERC2981, AccessControl, Pausable, ERC1155Burn
     address public royaltyRecipient;
     uint public royaltyFee;
 
+    event Minted(address to, uint tokenId, bytes data);
+
     constructor(string memory tokenBaseURI) ERC1155("") {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(URI_SETTER_ROLE, msg.sender);
@@ -80,14 +82,16 @@ contract CollaBeatNFT is ERC1155, IERC2981, AccessControl, Pausable, ERC1155Burn
       return _tokenIdCounter.current();
     }
     
-    function mint(address account, uint256 id, uint256 amount, bytes memory data)
+    function mint(address to, uint tokenId, uint256 amount, bytes memory data)
         public
         onlyRole(MINTER_ROLE)
     {
-        require(id < maxTokenId + 1, "Exceeded max token id");
-        require(totalSupply(id) + amount < maxSupplyPerTokenType + 1, "Exceed max total supply token type");
+        require(tokenId < maxTokenId + 1, "Exceeded max token id");
+        require(totalSupply(tokenId) + amount < maxSupplyPerTokenType + 1, "Exceed max total supply token type");
 
-        _mint(account, id, amount, data);
+        _mint(to, tokenId, amount, data);
+
+        emit Minted(to, tokenId, data);
     }
 
     // EIP2981 standard royalties return.
