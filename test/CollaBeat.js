@@ -38,19 +38,19 @@ describe("CollaBeat", function () {
 
     const abi = ethers.utils.defaultAbiCoder;
     const eventData = abi.encode(
-      ["string", "string"],
-      [hashByte.substring(2), cid]
+      ["string", "string", "string"],
+      [hashByte.substring(2), process.env.IPFS_ADDR, cid]
     )
 
     console.log({hash, hashUri, hashByte})
-    console.log(abi.decode(["string", "string"], eventData))
+    console.log(abi.decode(["string", "string", "string"], eventData))
 
     utility = utility.connect(owner1)
-    await expect(utility.fork(cid, {
+    await expect(utility.fork(process.env.IPFS_ADDR, cid, {
       value: mintFee,
       //gasLimit: 3000000
     }))
-    .to.emit(utility, 'Forked').withArgs(owner1.address, 1, hashByte.substring(2), cid)
+    .to.emit(utility, 'Forked').withArgs(owner1.address, 1, hashByte.substring(2), process.env.IPFS_ADDR, cid)
     .to.emit(nft, 'Minted').withArgs(owner1.address, 1, eventData);
 
 
@@ -89,18 +89,18 @@ describe("CollaBeat", function () {
 
     const abi = ethers.utils.defaultAbiCoder;
     const eventData = abi.encode(
-      ["string", "string"],
-      [hashByte.substring(2), cid]
+      ["string", "string", "string"],
+      [hashByte.substring(2), process.env.IPFS_ADDR, cid]
     )
 
     console.log({hash, hashUri, hashByte})
 
     utility = utility.connect(owner3)
-    await expect(utility.fork(cid, {
+    await expect(utility.fork(process.env.IPFS_ADDR, cid, {
       value: mintFee,
       //gasLimit: 3000000
     }))
-    .to.emit(utility, 'Forked').withArgs(owner3.address, 2, hashByte.substring(2), cid)
+    .to.emit(utility, 'Forked').withArgs(owner3.address, 2, hashByte.substring(2), process.env.IPFS_ADDR, cid)
     .to.emit(nft, 'Minted').withArgs(owner3.address, 2, eventData);
 
     const balance = await nft.balanceOf(owner3.address, 2)

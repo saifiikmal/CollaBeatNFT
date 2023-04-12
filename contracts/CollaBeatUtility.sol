@@ -21,7 +21,7 @@ contract CollaBeatUtility is AccessControl {
     string public chainId;
 
     event Minted(address from, uint tokenId, uint amount);
-    event Forked(address from, uint tokenId, string dataKey, string cid);
+    event Forked(address from, uint tokenId, string dataKey, string ipfs_multiaddress, string cid);
 
     constructor(address _nftAddress, uint _mintPrice, address _feeReceiver, uint8 _nonce, string memory _chainId) {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -43,7 +43,7 @@ contract CollaBeatUtility is AccessControl {
         emit Minted(msg.sender, tokenId, amount);
     }
 
-    function fork(string memory cid) public payable {
+    function fork(string memory ipfs_multiaddress, string memory cid) public payable {
         require(msg.value >= mintPrice, "Insufficient amount");
 
         uint tokenId = IERC1155(nftAddress).registerToken(); 
@@ -53,13 +53,13 @@ contract CollaBeatUtility is AccessControl {
         string memory _strNonce = Strings.toString(nonce);
         string memory newTokenURI = URIHash(abi.encodePacked(_strAddress, _strTokenId, chainId, _strNonce));
 
-        bytes memory data = abi.encode(newTokenURI, cid);
+        bytes memory data = abi.encode(newTokenURI, ipfs_multiaddress, cid);
         
         IERC1155(nftAddress).setURI(tokenId, newTokenURI);
 
         IERC1155(nftAddress).mint(msg.sender, tokenId, 1, data);
 
-        emit Forked(msg.sender, tokenId, newTokenURI, cid);
+        emit Forked(msg.sender, tokenId, newTokenURI, ipfs_multiaddress, cid);
     }
 
     function withdraw() external onlyRole(DEFAULT_ADMIN_ROLE) {
