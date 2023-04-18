@@ -16,6 +16,13 @@ async function main() {
   await utility.deployed()
   
   console.log("collabeatutility: ", utility.address)
+
+  // grant minter role
+  const minterRole = await nft.MINTER_ROLE()
+  const uriSetterRole = await nft.URI_SETTER_ROLE()
+  // console.log({minterRole})
+  await nft.grantRole(minterRole, utility.address)
+  await nft.grantRole(uriSetterRole, utility.address)
 }
 
 main().catch((error) => {

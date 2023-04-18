@@ -5,7 +5,6 @@ describe("CollaBeat", function () {
   let creator, owner1, owner2;
   let nft, utility;
   let tokenURI = 'http://localhost/metadata/'
-  const cid = "bafyreiegymvctsxcgew6ccqvrjatx6j32nmbe76co576ow7zltuswyyf7y"
 
   const mintFee = ethers.utils.parseUnits('0.05', 'ether');
   const collabFee = ethers.utils.parseUnits('0.05', 'ether');
@@ -37,20 +36,22 @@ describe("CollaBeat", function () {
     const hashUri = tokenURI+hashByte.substring(2)
 
     const abi = ethers.utils.defaultAbiCoder;
+    const forkData = abi.encode(["string", "string", "string"], ["name", process.env.IPFS_ADDR, process.env.FORK_CID])
     const eventData = abi.encode(
-      ["string", "string", "string"],
-      [hashByte.substring(2), process.env.IPFS_ADDR, cid]
+      ["string", "bytes"],
+      [hashByte.substring(2), forkData]
     )
 
     console.log({hash, hashUri, hashByte})
-    console.log(abi.decode(["string", "string", "string"], eventData))
+    console.log({forkData, eventData})
+    console.log(abi.decode(["string", "string", "string"], forkData))
 
     utility = utility.connect(owner1)
-    await expect(utility.fork(process.env.IPFS_ADDR, cid, {
+    await expect(utility.fork("name", process.env.IPFS_ADDR, process.env.FORK_CID, {
       value: mintFee,
       //gasLimit: 3000000
     }))
-    .to.emit(utility, 'Forked').withArgs(owner1.address, 1, hashByte.substring(2), process.env.IPFS_ADDR, cid)
+    .to.emit(utility, 'Forked').withArgs(owner1.address, 1, hashByte.substring(2), eventData)
     .to.emit(nft, 'Minted').withArgs(owner1.address, 1, eventData);
 
 
@@ -88,19 +89,20 @@ describe("CollaBeat", function () {
     const hashUri = tokenURI+hashByte.substring(2)
 
     const abi = ethers.utils.defaultAbiCoder;
+    const forkData = abi.encode(["string", "string", "string"], ["name", process.env.IPFS_ADDR, process.env.FORK_CID])
     const eventData = abi.encode(
-      ["string", "string", "string"],
-      [hashByte.substring(2), process.env.IPFS_ADDR, cid]
+      ["string", "bytes"],
+      [hashByte.substring(2), forkData]
     )
 
     console.log({hash, hashUri, hashByte})
 
     utility = utility.connect(owner3)
-    await expect(utility.fork(process.env.IPFS_ADDR, cid, {
+    await expect(utility.fork("name", process.env.IPFS_ADDR, process.env.FORK_CID, {
       value: mintFee,
       //gasLimit: 3000000
     }))
-    .to.emit(utility, 'Forked').withArgs(owner3.address, 2, hashByte.substring(2), process.env.IPFS_ADDR, cid)
+    .to.emit(utility, 'Forked').withArgs(owner3.address, 2, hashByte.substring(2), eventData)
     .to.emit(nft, 'Minted').withArgs(owner3.address, 2, eventData);
 
     const balance = await nft.balanceOf(owner3.address, 2)

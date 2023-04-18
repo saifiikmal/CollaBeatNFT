@@ -27,7 +27,7 @@ task("balance", "Prints an account's balance")
     const contract = new ethers.Contract(process.env.UTILITY_CONTRACT, abi, provider)
     const utility = contract.connect(accounts[0])
     for (let i=0; i < amount; i++) {
-      await utility.fork(process.env.FORK_CID)
+      await utility.fork(`My Beat ${i+1}`, process.env.IPFS_ADDR, process.env.FORK_CID)
       console.log('Fork ', i)
     }
     // console.log('signer: ', accounts[0])
